@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { resultInitialState } from "./constants";
-import AnswerTimer from "./components/AnswerTimer/AnswerTimer";
 const Quiz = ({ questions }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answerIdx, setAnswerIdx] = useState(null);
   const [answer, setAnswer] = useState(null);
   const [result, setResult] = useState(resultInitialState);
   const [showResult, setShowResult] = useState(false);
-  const [showAnswerTimer, setShowAnswerTimer] = useState(true);
-  const { question, choices, correctAnswer } = questions[currentQuestion];
+  const { question, options, correctAnswer } = questions[currentQuestion];
   const onAnswerClick = (answer, index) => {
     setAnswerIdx(index);
     if (answer === correctAnswer) {
@@ -19,7 +17,6 @@ const Quiz = ({ questions }) => {
   };
   const onClickNext = (finalAnswer) => {
     setAnswerIdx(null);
-    setShowAnswerTimer(false)
     setResult((prev) =>
       finalAnswer
         ? {
@@ -38,9 +35,6 @@ const Quiz = ({ questions }) => {
       setCurrentQuestion(0);
       setShowResult(true);
     }
-    setTimeout(()=>{
-        setShowAnswerTimer(true)
-    })
   };
   const onTryAgain = () => {
     setResult(resultInitialState);
@@ -55,26 +49,22 @@ const Quiz = ({ questions }) => {
       <div className="quiz-container">
         {!showResult ? (
           <>
-            {showAnswerTimer && (
-              <AnswerTimer duration={5} onTimeUp={handleTimeUp} />
-            )}
             <span className="active-question-no">{currentQuestion + 1}</span>
             <span className="total-question">/{questions.length}</span>
             <h2>{question}</h2>
             <ul>
-              {choices.map((answer) => ({ sort: Math.random(), value: answer }))
-                      .sort((a, b) => a.sort - b.sort)
-                      .map((obj) => obj.value).map((choice, index) => (
+              {Object.keys(options).map((choice, index) => (
                 <li
                   onClick={() => onAnswerClick(choice, index)}
                   key={choice}
                   className={answerIdx === index ? "selected-answer" : null}
                 >
-                  {choice}
+                  {options[choice]}
                 </li>
               ))}
             </ul>
             <div className="footer">
+              <button onClick={()=>checkAnswer(answer)} disabled={answerIdx === null}>Check Answer</button>
               <button
                 onClick={() => onClickNext(answer)}
                 disabled={answerIdx === null}
