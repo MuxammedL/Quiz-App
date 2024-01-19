@@ -7,6 +7,8 @@ $disabled: #9c9c9c;
 $foreground: #2d264b;
 $true_answer:#2ecc71;
 $wrong_answer:#e74c3c;
+$dark-primary: darken($primary, 10%);
+$light-primary: lighten($primary, 10%);
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 * {
   box-sizing: border-box;
@@ -62,8 +64,8 @@ body {
       margin-top: 15px;
       cursor: pointer;
       &.selected-answer {
-        background-color: $primary;
-        border: 1px solid $accent;
+        background-color: $light-primary;
+        border-color: $primary;
         color: $bg;
       }
     }
