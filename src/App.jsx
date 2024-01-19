@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
-import Entrance from "./entrance";
+import Entrance from "./Entrance";
 import Quiz from "./Quiz";
 function App() {
   const [questions, setQuestions] = useState(null);
 
-  
-
-  
   return (
     <>
       <Routes>
