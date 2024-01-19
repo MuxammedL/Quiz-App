@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { resultInitialState } from "./constants";
 import { Link, useNavigate } from "react-router-dom";
 import { motion as m } from "framer-motion";
+import { useLayoutEffect } from "react";
 const Quiz = ({ questions }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answerIdx, setAnswerIdx] = useState(null);
@@ -10,6 +11,25 @@ const Quiz = ({ questions }) => {
   const [showResult, setShowResult] = useState(false);
   const { question, options, correctAnswer } = questions[currentQuestion];
   const navigate = useNavigate();
+  useEffect(() => {
+    const keyValueArray = Object.entries(options);
+    const shuffledArray = shuffleArray(keyValueArray);
+    const newOptions = Object.fromEntries(shuffledArray);
+
+    // Update the options in the state
+    setShuffledOptions(newOptions);
+  }, []); // Empty dependency array ensures this effect runs only once
+
+  const [shuffledOptions, setShuffledOptions] = useState({});
+
+  // Function to shuffle the order of properties in an object
+  function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
 
   const onAnswerClick = (answer, index) => {
     setAnswerIdx(index);
@@ -53,15 +73,16 @@ const Quiz = ({ questions }) => {
     onClickNext(false);
   };
 
+  
   useEffect(() => {
     const variants = document.querySelectorAll(".variant");
     variants.forEach((variant) => {
+      variant.classList.contains("wrong") && variant.classList.remove("wrong");
+      variant.classList.contains("correct") &&
+      variant.classList.remove("correct");
       variant.addEventListener("click", handleClick);
-      variant.classList.contains('wrong')&&variant.classList.remove('wrong')
-      variant.classList.contains('correct')&&variant.classList.remove('correct')
     });
     function handleClick(e) {
-      console.log(this.dataset.choice === correctAnswer)
       if (this.dataset.choice === correctAnswer) {
         this.classList.add("correct");
       } else {
@@ -71,10 +92,10 @@ const Quiz = ({ questions }) => {
         variant.removeEventListener("click", handleClick);
         if (variant.dataset.choice === correctAnswer) {
           variant.classList.add("correct");
-        } 
+        }
       });
     }
-  }, [options]);
+  }, [shuffledOptions,options]);
   return (
     <>
       <m.div
@@ -93,7 +114,7 @@ const Quiz = ({ questions }) => {
             <span className="total-question">/{questions.length}</span>
             <h2>{question}</h2>
             <ul>
-              {Object.keys(options).map((choice, index) => (
+              {Object.keys(shuffledOptions).map((choice, index) => (
                 <li
                   onClick={() => onAnswerClick(choice, index)}
                   key={choice}
