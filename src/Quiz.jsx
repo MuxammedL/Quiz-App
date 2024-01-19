@@ -61,15 +61,18 @@ const Quiz = ({ questions }) => {
       variant.classList.contains('correct')&&variant.classList.remove('correct')
     });
     function handleClick(e) {
-      variants.forEach((variant) => {
-        variant.removeEventListener("click", handleClick);
-      });
       console.log(this.dataset.choice === correctAnswer)
       if (this.dataset.choice === correctAnswer) {
         this.classList.add("correct");
       } else {
         this.classList.add("wrong");
       }
+      variants.forEach((variant) => {
+        variant.removeEventListener("click", handleClick);
+        if (variant.dataset.choice === correctAnswer) {
+          variant.classList.add("correct");
+        } 
+      });
     }
   }, [options]);
   return (
