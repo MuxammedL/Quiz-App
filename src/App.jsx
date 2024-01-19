@@ -1,25 +1,21 @@
 import { useState, useEffect } from "react";
-import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
-
+import { Routes, Route, useNavigate } from "react-router-dom";
+import Entrance from "./entrance";
 import Quiz from "./Quiz";
 function App() {
-
-
-
   const [questions, setQuestions] = useState(null);
 
-  const getQuestions = async () => {
-    const res = await fetch("https://questions-vksc.onrender.com/unit1");
-    const data = await res.json();
-    setQuestions(data.slice(0,3));
-  };
+  
 
-  useEffect(() => {
-    getQuestions();
-
-  }, []);
-  console.log(questions);
-  return <>{questions && <Quiz questions={questions} />}</>;
+  
+  return (
+    <>
+      <Routes>
+        <Route index element={<Entrance setQuestions={setQuestions}/>} />
+        <Route path="quiz" element={questions &&<Quiz questions={questions}/>} />
+      </Routes>
+    </>
+  );
 }
 
 export default App;

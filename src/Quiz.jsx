@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { resultInitialState } from "./constants";
+import { Link, useNavigate } from "react-router-dom";
+import { motion as m } from "framer-motion";
 const Quiz = ({ questions }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answerIdx, setAnswerIdx] = useState(null);
@@ -7,6 +9,8 @@ const Quiz = ({ questions }) => {
   const [result, setResult] = useState(resultInitialState);
   const [showResult, setShowResult] = useState(false);
   const { question, options, correctAnswer } = questions[currentQuestion];
+  const navigate = useNavigate();
+
   const onAnswerClick = (answer, index) => {
     setAnswerIdx(index);
     if (answer === correctAnswer) {
@@ -36,17 +40,50 @@ const Quiz = ({ questions }) => {
       setShowResult(true);
     }
   };
+
   const onTryAgain = () => {
-    setResult(resultInitialState);
-    setShowResult(false);
+    navigate("/");
+    setTimeout(() => {
+      setResult(resultInitialState);
+      setShowResult(false);
+    }, 1000);
   };
   const handleTimeUp = () => {
     setAnswer(false);
     onClickNext(false);
   };
+
+  useEffect(() => {
+    const variants = document.querySelectorAll(".variant");
+    variants.forEach((variant) => {
+      variant.addEventListener("click", handleClick);
+      variant.classList.contains('wrong')&&variant.classList.remove('wrong')
+      variant.classList.contains('correct')&&variant.classList.remove('correct')
+    });
+    function handleClick(e) {
+      variants.forEach((variant) => {
+        variant.removeEventListener("click", handleClick);
+      });
+      console.log(this.dataset.choice === correctAnswer)
+      if (this.dataset.choice === correctAnswer) {
+        this.classList.add("correct");
+      } else {
+        this.classList.add("wrong");
+      }
+    }
+  }, [options]);
   return (
     <>
-      <div className="quiz-container">
+      <m.div
+        className="quiz-container"
+        initial={{
+          opacity: 0,
+        }}
+        animate={{
+          opacity: 1,
+        }}
+        transition={{ duration: 0.8, ease: "linear" }}
+      >
         {!showResult ? (
           <>
             <span className="active-question-no">{currentQuestion + 1}</span>
@@ -57,14 +94,14 @@ const Quiz = ({ questions }) => {
                 <li
                   onClick={() => onAnswerClick(choice, index)}
                   key={choice}
-                  className={answerIdx === index ? "selected-answer" : null}
+                  className={`variant`}
+                  data-choice={choice}
                 >
                   {options[choice]}
                 </li>
               ))}
             </ul>
             <div className="footer">
-              <button onClick={()=>checkAnswer(answer)} disabled={answerIdx === null}>Check Answer</button>
               <button
                 onClick={() => onClickNext(answer)}
                 disabled={answerIdx === null}
@@ -91,7 +128,7 @@ const Quiz = ({ questions }) => {
             <button onClick={onTryAgain}>Try Again</button>
           </div>
         )}
-      </div>
+      </m.div>
     </>
   );
 };
