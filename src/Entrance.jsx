@@ -1,11 +1,10 @@
 import { useRef } from "react";
-import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 const Entrance = ({ setQuestions }) => {
   const navigate = useNavigate();
   const selectRef = useRef();
   const goQuiz = () => {
-    const value = selectRef.current.value
+    const value = selectRef.current.value;
     if (value != "") {
       navigate("/quiz");
       const getQuestions = async () => {
@@ -13,7 +12,7 @@ const Entrance = ({ setQuestions }) => {
         const data = await res.json();
         setQuestions(data);
       };
-      getQuestions()
+      getQuestions();
     }
   };
   return (

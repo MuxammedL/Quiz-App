@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import { resultInitialState } from "./constants";
-import { Link, useNavigate } from "react-router-dom";
+import { questions, resultInitialState } from "./constants";
+import { useNavigate } from "react-router-dom";
 import { motion as m } from "framer-motion";
-import { useLayoutEffect } from "react";
-const Quiz = ({ questions }) => {
+const Quiz = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answerIdx, setAnswerIdx] = useState(null);
   const [answer, setAnswer] = useState(null);
@@ -73,13 +72,12 @@ const Quiz = ({ questions }) => {
     onClickNext(false);
   };
 
-  
   useEffect(() => {
     const variants = document.querySelectorAll(".variant");
     variants.forEach((variant) => {
       variant.classList.contains("wrong") && variant.classList.remove("wrong");
       variant.classList.contains("correct") &&
-      variant.classList.remove("correct");
+        variant.classList.remove("correct");
       variant.addEventListener("click", handleClick);
     });
     function handleClick(e) {
@@ -95,7 +93,7 @@ const Quiz = ({ questions }) => {
         }
       });
     }
-  }, [shuffledOptions,options]);
+  }, [shuffledOptions, options]);
   return (
     <>
       <m.div
