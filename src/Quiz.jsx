@@ -2,22 +2,36 @@ import { useState, useEffect } from "react";
 import { questions, resultInitialState } from "./constants";
 import { useNavigate } from "react-router-dom";
 import { motion as m } from "framer-motion";
+
+const MIN_QUESTION_NUMBER = 1;
+const MAX_QUESTION_NUMBER = 962;
+const QUIZ_QUESTION_LIMIT = 60;
+
 const Quiz = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answerIdx, setAnswerIdx] = useState(null);
   const [answer, setAnswer] = useState(null);
   const [result, setResult] = useState(resultInitialState);
   const [showResult, setShowResult] = useState(false);
-  const { question, options, correctAnswer } = questions[currentQuestion];
+  const [startQuestion, setStartQuestion] = useState("");
+  const [endQuestion, setEndQuestion] = useState("");
+  const [intervalError, setIntervalError] = useState("");
+  const [quizQuestions, setQuizQuestions] = useState([]);
+  const [isQuizStarted, setIsQuizStarted] = useState(false);
+  const selectedQuestion = quizQuestions[currentQuestion];
+  const { question, options, correctAnswer } = selectedQuestion || {};
   const navigate = useNavigate();
+
   useEffect(() => {
+    if (!options) return;
+
     const keyValueArray = Object.entries(options);
     const shuffledArray = shuffleArray(keyValueArray);
     const newOptions = Object.fromEntries(shuffledArray);
 
     // Update the options in the state
     setShuffledOptions(newOptions);
-  }, []); // Empty dependency array ensures this effect runs only once
+  }, [options]);
 
   const [shuffledOptions, setShuffledOptions] = useState({});
 
@@ -29,6 +43,65 @@ const Quiz = () => {
     }
     return array;
   }
+
+  const getQuestionInterval = () => {
+    const start =
+      startQuestion === "" ? MIN_QUESTION_NUMBER : Number(startQuestion);
+    const end = endQuestion === "" ? MAX_QUESTION_NUMBER : Number(endQuestion);
+
+    if (!Number.isInteger(start) || !Number.isInteger(end)) {
+      return {
+        error: "Question numbers must be whole numbers.",
+      };
+    }
+
+    if (start < MIN_QUESTION_NUMBER) {
+      return {
+        error: `Start question cannot be less than ${MIN_QUESTION_NUMBER}.`,
+      };
+    }
+
+    if (end > MAX_QUESTION_NUMBER) {
+      return {
+        error: `End question cannot be greater than ${MAX_QUESTION_NUMBER}.`,
+      };
+    }
+
+    if (start > end) {
+      return {
+        error: "Start question must be smaller than or equal to end question.",
+      };
+    }
+
+    return { start, end, error: "" };
+  };
+
+  const getRandomQuizQuestions = (start, end) => {
+    const filteredQuestions = questions.filter((_, index) => {
+      const questionNumber = index + 1;
+      return questionNumber >= start && questionNumber <= end;
+    });
+
+    return shuffleArray([...filteredQuestions]).slice(0, QUIZ_QUESTION_LIMIT);
+  };
+
+  const startQuiz = () => {
+    const { start, end, error } = getQuestionInterval();
+
+    if (error) {
+      setIntervalError(error);
+      return;
+    }
+
+    setQuizQuestions(getRandomQuizQuestions(start, end));
+    setIntervalError("");
+    setCurrentQuestion(0);
+    setAnswerIdx(null);
+    setAnswer(null);
+    setResult(resultInitialState);
+    setShowResult(false);
+    setIsQuizStarted(true);
+  };
 
   const onAnswerClick = (answer, index) => {
     setAnswerIdx(index);
@@ -50,9 +123,9 @@ const Quiz = () => {
         : {
             ...prev,
             wrongAnswers: prev.wrongAnswers + 1,
-          }
+          },
     );
-    if (currentQuestion !== questions.length - 1) {
+    if (currentQuestion !== quizQuestions.length - 1) {
       setCurrentQuestion((prev) => prev + 1);
     } else {
       setCurrentQuestion(0);
@@ -65,14 +138,17 @@ const Quiz = () => {
     setTimeout(() => {
       setResult(resultInitialState);
       setShowResult(false);
+      setIsQuizStarted(false);
+      setQuizQuestions([]);
+      setCurrentQuestion(0);
+      setAnswerIdx(null);
+      setAnswer(null);
     }, 1000);
-  };
-  const handleTimeUp = () => {
-    setAnswer(false);
-    onClickNext(false);
   };
 
   useEffect(() => {
+    if (!correctAnswer) return;
+
     const variants = document.querySelectorAll(".variant");
     variants.forEach((variant) => {
       variant.classList.contains("wrong") && variant.classList.remove("wrong");
@@ -93,7 +169,7 @@ const Quiz = () => {
         }
       });
     }
-  }, [shuffledOptions, options]);
+  }, [shuffledOptions, options, correctAnswer]);
   return (
     <>
       <m.div
@@ -106,10 +182,40 @@ const Quiz = () => {
         }}
         transition={{ duration: 0.8, ease: "linear" }}
       >
-        {!showResult ? (
+        {!isQuizStarted ? (
+          <div className="question-interval">
+            <h2>Choose question interval</h2>
+            <div className="interval-inputs">
+              <label>
+                Start question number
+                <input
+                  type="number"
+                  min={MIN_QUESTION_NUMBER}
+                  max={MAX_QUESTION_NUMBER}
+                  value={startQuestion}
+                  placeholder={`${MIN_QUESTION_NUMBER}`}
+                  onChange={(e) => setStartQuestion(e.target.value)}
+                />
+              </label>
+              <label>
+                End question number
+                <input
+                  type="number"
+                  min={MIN_QUESTION_NUMBER}
+                  max={MAX_QUESTION_NUMBER}
+                  value={endQuestion}
+                  placeholder={`${MAX_QUESTION_NUMBER}`}
+                  onChange={(e) => setEndQuestion(e.target.value)}
+                />
+              </label>
+            </div>
+            {intervalError && <p className="interval-error">{intervalError}</p>}
+            <button onClick={startQuiz}>Start Quiz</button>
+          </div>
+        ) : !showResult ? (
           <>
             <span className="active-question-no">{currentQuestion + 1}</span>
-            <span className="total-question">/{questions.length}</span>
+            <span className="total-question">/{quizQuestions.length}</span>
             <h2>{question}</h2>
             <ul>
               {Object.keys(shuffledOptions).map((choice, index) => (
@@ -128,7 +234,9 @@ const Quiz = () => {
                 onClick={() => onClickNext(answer)}
                 disabled={answerIdx === null}
               >
-                {currentQuestion === questions.length - 1 ? "Finish" : "Next"}
+                {currentQuestion === quizQuestions.length - 1
+                  ? "Finish"
+                  : "Next"}
               </button>
             </div>
           </>
@@ -136,7 +244,7 @@ const Quiz = () => {
           <div className="result">
             <h3>Result</h3>
             <p>
-              Total Questions: <span>{questions.length}</span>
+              Total Questions: <span>{quizQuestions.length}</span>
             </p>
             <p>
               Correct Answers: <span>{result.correctAnswers}</span>
