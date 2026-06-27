@@ -3954,7 +3954,7 @@ export const questions = [
       D: "Enerji mübadiləsi",
       E: "Hidroliz",
     },
-    correctAnswer: "B",
+    correctAnswer: "C",
   },
   {
     question:
@@ -4761,7 +4761,7 @@ export const questions = [
   {
     question: "416. Akrolein sınağı vasitəsilə nəyi aşkar etmək olar?",
     options: {
-      A: "Qliserofosfolipidləri",
+      A: "Qlikolipidləri",
       B: "Qliserofosfolipidləri",
       C: "Lipoproteidləri",
       D: "Xolesterini",
@@ -7309,7 +7309,7 @@ export const questions = [
       D: "İrindən hazırlanmış yaxmaya",
       E: "Basma yaxmaya",
     },
-    correctAnswer: "A",
+    correctAnswer: "C",
   },
   {
     question: "640. Qara yara törədicisi hansı morfoloji quruluşa malikdir?",
